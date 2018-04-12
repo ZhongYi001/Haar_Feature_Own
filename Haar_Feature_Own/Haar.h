@@ -7,7 +7,7 @@ using namespace cv;
 class HaarFeature
 {
 public:
-	HaarFeature(Rect& rect,int& type, int& size_max);
+	HaarFeature(int& size_min, int& size_max, const int& pic_size = 24);
 	//~HaarFeature();  // ±¨´í£¬É¾µô
 	
 	float caluHf(Mat& _img);
