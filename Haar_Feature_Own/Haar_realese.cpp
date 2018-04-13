@@ -220,6 +220,7 @@ float HaarFeature::caluHf(Mat& _img, vector<float>& m_feat)
 
 	for (int i = 0; i < (m_rects.size() + 1)/4; i++)
 	{
+		//cout << i << " ";
 		Val = 0;
 		float g_sum = sum(_imgInt, Rect(m_rects[i * 4].x, m_rects[i * 4].y, _img.cols - 2, _img.rows - 2));
 		float g_sqsum = g_sum * g_sum;
@@ -229,7 +230,7 @@ float HaarFeature::caluHf(Mat& _img, vector<float>& m_feat)
 
 		for (int j = 0; j < 4; j++)
 		{
-			Val += m_weights[ i * 4 + j] * sum(_imgInt, m_rects[j]);
+			Val += m_weights[ i * 4 + j] * sum(_imgInt, m_rects[i * 4 + j]);
 		}
 		if (g_sum == 0 || varNormFactor == 0)
 			Val = Val / (_img.cols * _img.rows);

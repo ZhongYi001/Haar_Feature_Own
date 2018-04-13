@@ -15,13 +15,14 @@ using namespace std;
 
 void getAllFiles(string path, vector<string>& files);
 
-string output = "../csv/test.csv";
+string output = "../csv/Train5.csv";
 float feat_type = 1;		// 1 是正样本，0是负样本
 
 
 
 int main()
 {
+	HaarFeature m_feature(1, 6);
 	int Win_size = 24;
 	vector<string> files;
 	string DATA_DIR = "../P_Train";
@@ -40,7 +41,7 @@ int main()
 
 	ofstream outFile;
 	outFile.open(output, ios::out);
-	for (unsigned int i = 1; i < files.size(); i++)
+	for (unsigned int i = 0; i < file_size; i++)
 	{
 		cout << files[i] << endl;
 		Mat image = imread(files[i]);
@@ -69,7 +70,7 @@ int main()
 
 		double time0 = static_cast<double>(getTickCount());
 
-		HaarFeature m_feature(1, 6);
+
 		m_feature.caluHf(image, m_feat);
 		
 
@@ -94,8 +95,8 @@ int main()
 		}
 		outFile << feat_type << endl;
 
-		if (zero == 13711)
-			break;
+		//if (zero == 13711)
+		//	break;
 
 		time0 = ((double)getTickCount() - time0) / getTickFrequency();
 		cout << "提取特征运行时间为：" << time0 << "秒" << endl;
