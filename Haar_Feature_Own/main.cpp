@@ -15,8 +15,8 @@ using namespace std;
 
 void getAllFiles(string path, vector<string>& files);
 
-string output = "../csv/N_Train4.csv";
-float feat_type = 0;		// 1 是正样本，0是负样本
+string output = "../csv/test.csv";
+float feat_type = 1;		// 1 是正样本，0是负样本
 
 
 
@@ -24,7 +24,7 @@ int main()
 {
 	int Win_size = 24;
 	vector<string> files;
-	string DATA_DIR = "../N_Train";
+	string DATA_DIR = "../P_Train";
 	//测试
 	char * DistAll = "AllFiles.txt";
 	getAllFiles(DATA_DIR, files);//所有文件与文件夹的路径都输出
@@ -40,7 +40,7 @@ int main()
 
 	ofstream outFile;
 	outFile.open(output, ios::out);
-	for (int i = 0; i < files.size(); i++)
+	for (unsigned int i = 1; i < files.size(); i++)
 	{
 		cout << files[i] << endl;
 		Mat image = imread(files[i]);
@@ -62,102 +62,40 @@ int main()
 
 
 
-		Rect rect = Rect(0, 0, 0, 0);
-		int size_max = 6;
-		int x_Max, y_Max;
-		vector<HaarFeature> m_feature;
+		//Rect rect = Rect(0, 0, 0, 0);
+		//int size_max = 6;
+		//vector<HaarFeature> m_feature;
+		vector<float> m_feat;
 
 		double time0 = static_cast<double>(getTickCount());
-		for (int size = 1; size <= size_max; size = size + 1)
-		{
-			//cout << endl << "尺度大小" << size << endl;
-			for (int type = 0; type <= 7; type++)
-			{
-				switch (type)
-				{
-				case 0:
-				{
-					x_Max = image.cols - 2 * size;
-					y_Max = image.rows - 2 * size;
-					break;
-				}
-				case 1:
-				{
-					x_Max = image.cols - 2 * size;
-					y_Max = image.rows - 2 * size;
-					break;
-				}
-				case 2:
-				{
-					x_Max = image.cols - 3 * size;
-					y_Max = image.rows - 2 * size;
-					break;
-				}
-				case 3:
-				{
-					x_Max = image.cols - 2 * size;
-					y_Max = image.rows - 3 * size;
-					break;
-				}
-				case 4:
-				{
-					x_Max = image.cols - 4 * size;
-					y_Max = image.rows - 2 * size;
-					break;
-				}
-				case 5:
-				{
-					x_Max = image.cols - 2 * size;
-					y_Max = image.rows - 4 * size;
-					break;
-				}
-				case 6:
-				{
-					x_Max = image.cols - 2 * size;
-					y_Max = image.rows - 4 * size;
-					break;
-				}
-				case 7:
-				{
-					x_Max = image.cols - 2 * size;
-					y_Max = image.rows - 1 * size;
-					break;
-				}
-				}
-				//cout << endl << "特征序号 " << type << endl;
-				for (rect.x = 0; rect.x <= x_Max; rect.x++)
-				{
-					for (rect.y = 0; rect.y <= y_Max; rect.y++)
-					{
-						//cout << rect.x << "|" << rect.y << "   ";
-						m_feature.push_back(HaarFeature(rect, type, size));			// 生成特征模板
-					}
-				}
-			}
-		}
 
+		HaarFeature m_feature(1, 6);
+		m_feature.caluHf(image, m_feat);
+		
 
-		float m_feat;
-		int feat_num = (int)m_feature.size();
-		cout << "特征个数: " << feat_num << endl;
-
-
+		cout << m_feat.size() << endl;
 		//m_feat = m_feature[3520].caluHf(image);
 		//cout << i << "";
-
-		for (int i = 0; i < feat_num; i++)
+		int zero = 0;
+		for (unsigned int j = 0; j < m_feat.size(); j++)
 		{
-			m_feat = m_feature[i].caluHf(image);
+			float tmp;
+			tmp = m_feat[j];
+			
 			//cout << i << "|";
-			outFile << m_feat << ',';
+			outFile << tmp << ',';
 			//cout << m_feat << endl;
 			//if (m_feat < -1.70141e+38 || m_feat > 1.70141e+38)
 			//{
 			//	cout << i << endl;
 			//}
+			if (tmp == 0)
+				zero++;
 		}
 		outFile << feat_type << endl;
 
+		if (zero == 13711)
+			break;
 
 		time0 = ((double)getTickCount() - time0) / getTickFrequency();
 		cout << "提取特征运行时间为：" << time0 << "秒" << endl;

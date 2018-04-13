@@ -4,13 +4,13 @@
 
 using namespace std;
 
-HaarFeature::HaarFeature(int& size_min, int& size_max, const int& pic_size = 24)
+HaarFeature::HaarFeature(const int& size_min, const int& size_max, const int& step, const int& pic_size )
 {
 	Rect rect = Rect(0, 0, 0, 0);
 	int x_Max = 0, y_Max = 0;
 
 
-	for (int size = 1; size <= size_max; size++)
+	for (int size = size_min; size <= size_max; size++)
 	{
 		for (int type = 0; type <= 7; type++)
 		{
@@ -177,60 +177,80 @@ HaarFeature::HaarFeature(int& size_min, int& size_max, const int& pic_size = 24)
 }
 
 
-float HaarFeature::sum(Mat& _img, Rect& _rect)
+float HaarFeature::sum(Mat& _imgInt, Rect& _rect)
 {
 	int x = _rect.x + _rect.width;
 	int y = _rect.y + _rect.height;
-	Mat _imgInt;
 	int tempVal = 0;
-	integral(_img, _imgInt, CV_32F);
-	//int a, b, c, d;
-	//a = ;
-	//tempVal = a + b + c + d;
-	tempVal =
-		_imgInt.at<int>(x, y) +
-		_imgInt.at<int>(_rect.x + 1, _rect.y + 1) -
-		_imgInt.at<int>(x , _rect.y + 1) -
-		_imgInt.at<int>(_rect.x + 1, y);
+	float a, b, c, d;
+	a = _imgInt.at<int>(x, y);
+	b = _imgInt.at<int>(_rect.x, _rect.y);
+	c = _imgInt.at<int>(x, _rect.y);
+	d = _imgInt.at<int>(_rect.x, y);
+	tempVal = a + b - c - d;
+	//tempVal =
+	//	_imgInt.at<int>(x, y) +
+	//	_imgInt.at<int>(_rect.x + 1, _rect.y + 1) -
+	//	_imgInt.at<int>(x , _rect.y + 1) -
+	//	_imgInt.at<int>(_rect.x + 1, y);
 	return tempVal;
 }
 
 
-float HaarFeature::caluHf(Mat& _img)
+float HaarFeature::caluHf(Mat& _img, vector<float>& m_feat)
 {
 	Mat _imgInt;
 	int tempVal = 0;
-	int Val = 0;
-	float a1 = m_weights[0], 
-		a2 = m_weights[1],
-		a3 = m_weights[2],
-		a4 = m_weights[3];
-	Rect r1 = m_rects[0], 
-		r2 = m_rects[1],
-		r3 = m_rects[2], 
-		r4 = m_rects[3];
-	for (int i = 0; i < m_rects.size(); i++)
+	float Val = 0;
+	integral(_img, _imgInt, CV_32F);
+
+
+
+
+
+	//float a1 = m_weights[0], 
+	//	a2 = m_weights[1],
+	//	a3 = m_weights[2],
+	//	a4 = m_weights[3];
+	//Rect r1 = m_rects[0], 
+	//	r2 = m_rects[1],
+	//	r3 = m_rects[2], 
+	//	r4 = m_rects[3];
+
+
+	for (int i = 0; i < (m_rects.size() + 1)/4; i++)
 	{
+		Val = 0;
+		float g_sum = sum(_imgInt, Rect(m_rects[i * 4].x, m_rects[i * 4].y, _img.cols - 2, _img.rows - 2));
+		float g_sqsum = g_sum * g_sum;
+		float mean = g_sum / ((_img.cols - 2) * (_img.rows - 2)),
+			sqmean = g_sqsum / ((_img.cols - 2) * (_img.rows - 2));
+		float varNormFactor = sqrt(sqmean - mean * mean);
+
 		for (int j = 0; j < 4; j++)
 		{
-			Val += m_weights[j] * ;
+			Val += m_weights[ i * 4 + j] * sum(_imgInt, m_rects[j]);
 		}
-	}
-	Val = a1 * sum(_img, r1) +
-		a2 * sum(_img, r2) +
-		a3 * sum(_img, r3) +
-		a4 * sum(_img, r4);
-	
-	float g_sum = sum(_img, Rect(r1.x, r1.y, _img.cols - 2, _img.rows - 2));
-	float g_sqsum = g_sum * g_sum;
-	float mean = g_sum / ((_img.cols - 2 ) * (_img.rows - 2)),
-		sqmean = g_sqsum / ((_img.cols - 2) * (_img.rows - 2));
-	float varNormFactor = sqrt(sqmean - mean * mean); 
-	if (g_sum == 0 || varNormFactor == 0)
-	{
-		return Val / (_img.cols * _img.rows);
-	}
-	else
-	return Val / (varNormFactor);
+		if (g_sum == 0 || varNormFactor == 0)
+			Val = Val / (_img.cols * _img.rows);
+		else
+			Val = Val / varNormFactor;
 
+		m_feat.push_back(Val);
+	}
+
+
+	//Val = a1 * sum(_img, r1) +
+	//	a2 * sum(_img, r2) +
+	//	a3 * sum(_img, r3) +
+	//	a4 * sum(_img, r4);
+	
+	//if (g_sum == 0 || varNormFactor == 0)
+	//{
+	//	return Val / (_img.cols * _img.rows);
+	//}
+	//else
+	//return Val / (varNormFactor);
+
+	return 0;
 }
